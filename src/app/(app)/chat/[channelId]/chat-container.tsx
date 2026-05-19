@@ -68,7 +68,7 @@ export default function ChatContainer({ channel, initialMessages, userId, curren
   }
 
   return (
-    <div className="flex flex-col h-screen max-h-screen">
+    <div className="flex flex-col h-full">
       {/* Dynamic Header */}
       {channel.type === 'supergroup' && topic ? (
         <TopicHeader topic={topic} onlineCount={onlineUsers.length} onSettingsClick={() => setShowSettings(true)} />

@@ -45,7 +45,13 @@ export function AttachmentPicker({
   }
 
   return (
-    <div {...getRootProps()} className="relative">
+    <div 
+      {...getRootProps()} 
+      className={cn(
+        "relative",
+        !isDragActive && pendingFiles.length === 0 && "pointer-events-none"
+      )}
+    >
       <input {...getInputProps()} />
       
       {isDragActive && (

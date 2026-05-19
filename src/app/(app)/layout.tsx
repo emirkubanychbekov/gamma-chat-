@@ -29,7 +29,7 @@ export default async function AppLayout({
       <Sidebar user={user} profile={profile} />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-slate-900/20 relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-900/20 relative overflow-hidden h-full">
         {children}
       </main>
     </div>
