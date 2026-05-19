@@ -7,8 +7,9 @@ import { MessageInput } from '@/components/chat/MessageInput'
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages'
 import { usePresence } from '@/hooks/usePresence'
 import { createClient } from '@/lib/supabase/client'
-import { Hash, Users, Phone, Video, Trash2, Settings } from 'lucide-react'
+import { Hash, Users, Phone, Video, Trash2, Settings, ChevronLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { TopicHeader } from '@/components/supergroup/TopicHeader'
 import { useCall } from '@/components/calls/CallProvider'
 import { deleteGroup } from '@/app/(app)/chat/actions'
@@ -74,6 +75,9 @@ export default function ChatContainer({ channel, initialMessages, userId, curren
       ) : (
         <header className="h-16 flex items-center justify-between px-6 glass border-b border-white/5 shrink-0 z-30">
           <div className="flex items-center gap-4">
+            <Link href="/" className="md:hidden p-2 hover:bg-white/5 rounded-lg text-muted-foreground mr-1">
+              <ChevronLeft className="w-6 h-6" />
+            </Link>
             <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
               {channel.type === 'dm' ? <Users className="w-5 h-5" /> : <Hash className="w-5 h-5" />}
             </div>

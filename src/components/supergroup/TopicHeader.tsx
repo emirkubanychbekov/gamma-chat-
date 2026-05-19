@@ -1,7 +1,8 @@
 'use client'
 
-import { Hash, Users, Info, ChevronDown, Settings } from 'lucide-react'
+import { Hash, Users, Info, ChevronDown, Settings, ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 interface TopicHeaderProps {
   topic: any
@@ -15,6 +16,9 @@ export function TopicHeader({ topic, onlineCount, onSettingsClick }: TopicHeader
   return (
     <header className="h-16 flex items-center justify-between px-6 glass border-b border-white/5 shrink-0 z-30">
       <div className="flex items-center gap-4">
+        <Link href="/" className="md:hidden p-2 hover:bg-white/5 rounded-lg text-muted-foreground mr-1">
+          <ChevronLeft className="w-6 h-6" />
+        </Link>
         <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl">
           {topic.icon_emoji}
         </div>

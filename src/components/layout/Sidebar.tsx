@@ -11,7 +11,8 @@ import {
   Search,
   MessageCircle,
   Users,
-  ChevronRight
+  ChevronRight,
+  Pin
 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -31,6 +32,20 @@ export function Sidebar({ user, profile }: { user: any, profile: any }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [contacts, setContacts] = useState<any[]>([])
+  const [isPinned, setIsPinned] = useState(true)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar_pinned')
+    if (saved !== null) {
+      setIsPinned(saved === 'true')
+    }
+  }, [])
+
+  const togglePin = () => {
+    const next = !isPinned
+    setIsPinned(next)
+    localStorage.setItem('sidebar_pinned', String(next))
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,20 +122,55 @@ export function Sidebar({ user, profile }: { user: any, profile: any }) {
   }, [user.id, supabase])
 
   return (
-    <aside className="w-72 border-r border-white/5 flex flex-col bg-slate-950 shrink-0 z-50">
-      {/* Sidebar Header */}
-      <div className="p-4 border-b border-white/5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center glow-sm">
-              <MessageCircle className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-white">Gamma</span>
+    <div 
+      className={cn(
+        "transition-all duration-300 z-50 select-none",
+        currentChannelId ? "hidden md:block" : "w-full md:block",
+        isPinned 
+          ? "md:relative md:w-72 md:h-screen shrink-0" 
+          : "md:fixed md:left-0 md:top-0 md:bottom-0 md:w-3 md:hover:w-72 group"
+      )}
+    >
+      <aside 
+        className={cn(
+          "h-full border-r border-white/5 flex flex-col bg-slate-950/95 backdrop-blur-xl transition-all duration-300 ease-out shadow-2xl relative w-full md:w-72",
+          !isPinned && "md:absolute md:left-0 md:top-0 md:bottom-0 md:-translate-x-[calc(100%-8px)] md:group-hover:translate-x-0"
+        )}
+      >
+        {/* Hover Indicator Handle (Glowing Accent Strip) */}
+        {!isPinned && (
+          <div className="absolute right-0 top-0 bottom-0 w-2 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none md:flex hidden">
+            <div className="w-1 h-16 bg-gradient-to-b from-primary to-accent rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] opacity-60" />
           </div>
-          <Link href="/settings/profile" className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors">
-            <Settings className="w-5 h-5" />
-          </Link>
-        </div>
+        )}
+
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-white/5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center glow-sm">
+                <MessageCircle className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight text-white">Gamma</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={togglePin}
+                className={cn(
+                  "p-2 rounded-lg transition-colors hidden md:block",
+                  isPinned 
+                    ? "text-primary hover:bg-primary/10 bg-primary/5" 
+                    : "text-muted-foreground hover:bg-white/5"
+                )}
+                title={isPinned ? "Collapse Sidebar (Hover to reveal)" : "Pin Sidebar"}
+              >
+                <Pin className={cn("w-4 h-4 transition-transform", isPinned && "rotate-45")} />
+              </button>
+              <Link href="/settings/profile" className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors">
+                <Settings className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
 
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -235,5 +285,6 @@ export function Sidebar({ user, profile }: { user: any, profile: any }) {
         onClose={() => setIsSearchOpen(false)} 
       />
     </aside>
+    </div>
   )
 }

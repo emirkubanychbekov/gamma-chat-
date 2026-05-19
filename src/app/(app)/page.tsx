@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     .single()
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+    <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute top-1/4 -right-64 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 -left-64 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
