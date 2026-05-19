@@ -40,28 +40,36 @@ export function StoryBar({ currentUserId }: { currentUserId: string }) {
 
   const fetchStories = async () => {
     try {
-      // 1. Fetch channel IDs of channels the current user is a member of
+      // 1. Fetch channel IDs and types of channels the current user is a member of
       const { data: myMemberships } = await supabase
         .from('channel_members')
-        .select('channel_id')
+        .select('channel_id, channels:channel_id(type)')
         .eq('user_id', currentUserId)
 
       let allowedUserIds = [currentUserId]
 
       if (myMemberships && myMemberships.length > 0) {
-        const myChannelIds = myMemberships.map(m => m.channel_id)
+        // Only include DM and Group channels (exclude public supergroups)
+        const myPrivateChannelIds = myMemberships
+          .filter(m => {
+            const channel = m.channels as any
+            return channel && (channel.type === 'dm' || channel.type === 'group')
+          })
+          .map(m => m.channel_id)
         
-        // 2. Fetch all user IDs who share any channel with the current user
-        const { data: sharedMembers } = await supabase
-          .from('channel_members')
-          .select('user_id')
-          .in('channel_id', myChannelIds)
+        if (myPrivateChannelIds.length > 0) {
+          // 2. Fetch all user IDs who share any DM or private group with the current user
+          const { data: sharedMembers } = await supabase
+            .from('channel_members')
+            .select('user_id')
+            .in('channel_id', myPrivateChannelIds)
 
-        if (sharedMembers) {
-          allowedUserIds = Array.from(new Set([
-            currentUserId,
-            ...sharedMembers.map(m => m.user_id)
-          ]))
+          if (sharedMembers) {
+            allowedUserIds = Array.from(new Set([
+              currentUserId,
+              ...sharedMembers.map(m => m.user_id)
+            ]))
+          }
         }
       }
 
