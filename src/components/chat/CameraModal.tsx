@@ -132,7 +132,12 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
           ) : (
             <>
               <button 
-                onClick={() => setHasPhoto(false)}
+                onClick={() => {
+                  setHasPhoto(false)
+                  if (videoRef.current) {
+                    videoRef.current.play().catch(err => console.error("Error resuming camera stream:", err))
+                  }
+                }}
                 className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-2xl text-white transition-all"
               >
                 <RotateCw className="w-5 h-5" /> Retake
