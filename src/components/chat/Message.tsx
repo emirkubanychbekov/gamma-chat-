@@ -22,7 +22,7 @@ interface MessageProps {
 export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: MessageProps) {
   const supabase = createClient()
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [showActions, setShowActions] = useState(false)
 
   const handleReaction = async (emoji: string) => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -41,14 +41,17 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
       })
     }
     setShowEmojiPicker(false)
+    setShowActions(false)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     await supabase.from('messages').update({
       content: 'Message deleted',
       deleted_at: new Date().toISOString(),
       type: 'system'
     }).eq('id', message.id)
+    setShowActions(false)
   }
 
   // Group reactions by emoji
@@ -102,14 +105,17 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
             </div>
           )}
 
-          <div className={cn(
-            "px-4 py-2 rounded-2xl text-sm relative space-y-2",
-            isMe 
-              ? "bg-primary text-white rounded-tr-none" 
-              : "bg-slate-800 text-slate-200 rounded-tl-none",
-            message.deleted_at && "italic text-muted-foreground opacity-70 bg-white/5 border border-white/5",
-            message.isOptimistic && "opacity-60"
-          )}>
+          <div 
+            onClick={() => setShowActions(!showActions)}
+            className={cn(
+              "px-4 py-2 rounded-2xl text-sm relative space-y-2 cursor-pointer select-none",
+              isMe 
+                ? "bg-primary text-white rounded-tr-none" 
+                : "bg-slate-800 text-slate-200 rounded-tl-none",
+              message.deleted_at && "italic text-muted-foreground opacity-70 bg-white/5 border border-white/5",
+              message.isOptimistic && "opacity-60"
+            )}
+          >
             {/* Attachments */}
             {message.attachments && message.attachments.length > 0 && (
               <div className="flex flex-col gap-2 mb-1">
@@ -132,17 +138,25 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
             {/* Hover Actions */}
             <div className={cn(
               "absolute top-0 opacity-0 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1 glass p-1 rounded-lg border border-white/10 shadow-xl z-20",
+              showActions && "opacity-100 pointer-events-auto",
               isMe ? "right-full mr-2" : "left-full ml-2"
             )}>
               <button 
-                onClick={() => onReply(message)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onReply(message)
+                  setShowActions(false)
+                }}
                 className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
                 title="Reply"
               >
                 <Reply className="w-4 h-4" />
               </button>
               <button 
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowEmojiPicker(!showEmojiPicker)
+                }}
                 className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
                 title="React"
               >
@@ -151,7 +165,11 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
               {isMe && !message.deleted_at && (
                 <>
                   <button 
-                    onClick={() => onEdit(message)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit(message)
+                      setShowActions(false)
+                    }}
                     className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
                     title="Edit"
                   >
