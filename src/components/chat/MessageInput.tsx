@@ -152,7 +152,7 @@ export function MessageInput({
   }
 
   return (
-    <div className="p-4 bg-slate-950/50 border-t border-white/5 relative">
+    <div className="px-4 py-3 bg-slate-950/50 border-t border-white/5 relative">
       <AttachmentPicker 
         onFilesSelected={(files) => setPendingFiles(prev => [...prev, ...files])}
         pendingFiles={pendingFiles}
