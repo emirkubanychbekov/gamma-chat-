@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CameraModal } from '@/components/chat/CameraModal'
 import { toast } from 'react-hot-toast'
@@ -256,19 +256,55 @@ export function StoryBar({ currentUserId }: { currentUserId: string }) {
           groups={storyGroups} 
           initialGroupIndex={activeGroupIndex} 
           onClose={() => setActiveGroupIndex(null)} 
+          onStoryDeleted={fetchStories}
+          currentUserId={currentUserId}
         />
       )}
     </>
   )
 }
 
-function StoryViewer({ groups, initialGroupIndex, onClose }: { groups: StoryGroup[], initialGroupIndex: number, onClose: () => void }) {
+function StoryViewer({ 
+  groups, 
+  initialGroupIndex, 
+  onClose,
+  onStoryDeleted,
+  currentUserId
+}: { 
+  groups: StoryGroup[], 
+  initialGroupIndex: number, 
+  onClose: () => void,
+  onStoryDeleted: () => void,
+  currentUserId: string
+}) {
   const [currentGroupIndex, setCurrentGroupIndex] = useState(initialGroupIndex)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   
   const currentGroup = groups[currentGroupIndex]
   const currentStory = currentGroup.stories[currentStoryIndex]
+  const supabase = createClient()
+
+  const handleDeleteStory = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm('Are you sure you want to delete this story?')) return
+
+    try {
+      const { error } = await supabase
+        .from('stories')
+        .delete()
+        .eq('id', currentStory.id)
+
+      if (error) throw error
+
+      toast.success('Story deleted')
+      onStoryDeleted()
+      onClose()
+    } catch (err: any) {
+      console.error('Error deleting story:', err)
+      toast.error('Failed to delete story: ' + err.message)
+    }
+  }
 
   // Interval for updating progress strictly, no side-effects
   useEffect(() => {
@@ -358,19 +394,33 @@ function StoryViewer({ groups, initialGroupIndex, onClose }: { groups: StoryGrou
           ))}
         </div>
 
-        {/* Profile Info */}
-        <div className="absolute top-8 left-4 z-20 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-slate-800">
-            {currentGroup.profiles.avatar_url ? (
-              <img src={currentGroup.profiles.avatar_url} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center font-bold text-xs">{currentGroup.profiles.username[0].toUpperCase()}</div>
-            )}
+        {/* Profile Info & Optional Delete Button */}
+        <div className="absolute top-8 left-4 right-4 z-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-slate-800">
+              {currentGroup.profiles.avatar_url ? (
+                <img src={currentGroup.profiles.avatar_url} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-bold text-xs">{currentGroup.profiles.username[0].toUpperCase()}</div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-white shadow-black drop-shadow-md text-sm">{currentGroup.profiles.display_name || currentGroup.profiles.username}</span>
+              <span className="text-[10px] text-white/70 shadow-black drop-shadow-md">
+                {new Date(currentStory.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
           </div>
-          <span className="font-bold text-white shadow-black drop-shadow-md">{currentGroup.profiles.display_name || currentGroup.profiles.username}</span>
-          <span className="text-xs text-white/70 shadow-black drop-shadow-md">
-            {new Date(currentStory.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
+
+          {currentStory.user_id === currentUserId && (
+            <button 
+              onClick={handleDeleteStory}
+              className="p-2 bg-black/40 hover:bg-red-500/20 text-white hover:text-red-500 rounded-full transition-all z-30 pointer-events-auto"
+              title="Delete Story"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Image/Video */}
