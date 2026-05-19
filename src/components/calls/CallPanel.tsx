@@ -27,7 +27,7 @@ export function CallPanel() {
   const [hardError, setHardError] = useState<string | null>(null)
 
   const roomOptions = useMemo(() => ({
-    publishDefaults: { videoSimulcast: true },
+    publishDefaults: { simulcast: true },
     adaptiveStream: true,
   }), [])
 

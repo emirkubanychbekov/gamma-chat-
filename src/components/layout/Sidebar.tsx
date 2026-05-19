@@ -43,10 +43,13 @@ export function Sidebar({ user, profile }: { user: any, profile: any }) {
         .eq('user_id', user.id)
 
       if (memberChannels) {
-        const channelsData = memberChannels.map(mc => mc.channel)
+        const channelsData = memberChannels.map(mc => {
+          const c: any = Array.isArray(mc.channel) ? mc.channel[0] : mc.channel
+          return c
+        }).filter(Boolean)
         
         // Find all DM channels to rename them for the UI
-        const dmChannels = channelsData.filter(c => c.type === 'dm')
+        const dmChannels = channelsData.filter(c => c && c.type === 'dm')
         if (dmChannels.length > 0) {
           const { data: allMembers } = await supabase
             .from('channel_members')
@@ -56,12 +59,13 @@ export function Sidebar({ user, profile }: { user: any, profile: any }) {
             
           if (allMembers) {
             channelsData.forEach(c => {
-              if (c.type === 'dm') {
+              if (c && c.type === 'dm') {
                 const otherMember = allMembers.find(m => m.channel_id === c.id)
                 if (otherMember && otherMember.profiles) {
+                  const p = Array.isArray(otherMember.profiles) ? otherMember.profiles[0] : otherMember.profiles
                   // Override the display name and avatar for DMs
-                  c.name = otherMember.profiles.display_name || otherMember.profiles.username
-                  c.avatar_url = otherMember.profiles.avatar_url
+                  c.name = p?.display_name || p?.username || 'Unknown User'
+                  c.avatar_url = p?.avatar_url
                 } else {
                   c.name = 'Unknown User'
                 }

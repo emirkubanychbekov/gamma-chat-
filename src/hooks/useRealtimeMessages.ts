@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Message } from '@/lib/types/chat'
+import { Message, Attachment } from '@/lib/types/chat'
 
 export function useRealtimeMessages(channelId: string, initialMessages: Message[]) {
   const supabase = useMemo(() => createClient(), [])
@@ -92,7 +92,7 @@ export function useRealtimeMessages(channelId: string, initialMessages: Message[
           if (!isMounted.current) return
           setMessages((prev) => 
             prev.map((msg) => msg.id === payload.new.message_id 
-              ? { ...msg, attachments: [...(msg.attachments || []), payload.new] } 
+              ? { ...msg, attachments: [...(msg.attachments || []), payload.new as Attachment] } 
               : msg
             )
           )

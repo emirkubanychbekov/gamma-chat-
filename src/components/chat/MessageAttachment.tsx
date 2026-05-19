@@ -5,18 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getSignedUrl } from '@/lib/upload'
 import { Download, File as FileIcon, Play, Pause, Volume2, Maximize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-interface Attachment {
-  id: string
-  filename: string
-  file_path: string
-  content_type: string
-  size_bytes: number
-  width?: number
-  height?: number
-  duration_seconds?: number
-  thumbnail_url?: string
-}
+import { Attachment } from '@/lib/types/chat'
 
 export function MessageAttachment({ attachment }: { attachment: Attachment }) {
   const supabase = createClient()

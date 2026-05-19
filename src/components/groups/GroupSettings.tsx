@@ -31,7 +31,21 @@ export function GroupSettings({ channel, currentUserId, onClose }: { channel: an
         .select('user_id, role, profiles(username, display_name, avatar_url)')
         .eq('channel_id', channel.id)
       
-      if (data) setMembers(data as Member[])
+      if (data) {
+        const formatted = data.map((item: any) => {
+          const p = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+          return {
+            user_id: item.user_id,
+            role: item.role,
+            profiles: {
+              username: p?.username || '',
+              display_name: p?.display_name || null,
+              avatar_url: p?.avatar_url || null,
+            }
+          }
+        })
+        setMembers(formatted as Member[])
+      }
     }
     fetchMembers()
   }, [channel.id, supabase])
@@ -47,7 +61,21 @@ export function GroupSettings({ channel, currentUserId, onClose }: { channel: an
         .from('channel_members')
         .select('user_id, role, profiles(username, display_name, avatar_url)')
         .eq('channel_id', channel.id)
-      if (data) setMembers(data as Member[])
+      if (data) {
+        const formatted = data.map((item: any) => {
+          const p = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles
+          return {
+            user_id: item.user_id,
+            role: item.role,
+            profiles: {
+              username: p?.username || '',
+              display_name: p?.display_name || null,
+              avatar_url: p?.avatar_url || null,
+            }
+          }
+        })
+        setMembers(formatted as Member[])
+      }
     } catch (error: any) {
       toast.error(error.message)
     } finally {

@@ -7,6 +7,20 @@ import { cn } from '@/lib/utils'
 import { CameraModal } from '@/components/chat/CameraModal'
 import { toast } from 'react-hot-toast'
 
+interface Story {
+  id: string
+  user_id: string
+  media_url: string
+  media_type: 'video' | 'image'
+  created_at: string
+  expires_at: string
+  profiles: {
+    username: string
+    avatar_url: string | null
+    display_name: string | null
+  }
+}
+
 interface StoryGroup {
   user_id: string
   profiles: {
