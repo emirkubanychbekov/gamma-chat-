@@ -31,7 +31,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
+      <body className="h-full overflow-hidden flex flex-col bg-background text-foreground transition-colors duration-300">
         <CallProvider>
           <AuthStateTracker />
           {children}
