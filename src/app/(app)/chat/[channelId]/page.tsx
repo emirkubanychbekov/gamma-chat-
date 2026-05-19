@@ -20,13 +20,13 @@ export default async function ChatPage({ params }: PageProps) {
     supabase.from('messages')
       .select('*, topic_id, profiles:sender_id (*), reply_to:reply_to_id (*, profiles:sender_id (*)), reactions (*), attachments (*)')
       .eq('channel_id', channelId)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(100),
     supabase.from('profiles').select('*').eq('id', user.id).single()
   ])
 
   const channel = channelResult.data
-  const messages = messagesResult.data
+  const messages = messagesResult.data ? [...messagesResult.data].reverse() : []
   const currentUserProfile = profileResult.data
 
   if (!channel) {
