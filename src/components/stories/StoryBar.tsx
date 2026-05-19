@@ -39,57 +39,84 @@ export function StoryBar({ currentUserId }: { currentUserId: string }) {
   const [activeGroupIndex, setActiveGroupIndex] = useState<number | null>(null)
 
   const fetchStories = async () => {
-    // Fetch stories from the last 24 hours
-    const { data: storiesData, error } = await supabase
-      .from('stories')
-      .select('*')
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
+    try {
+      // 1. Fetch channel IDs of channels the current user is a member of
+      const { data: myMemberships } = await supabase
+        .from('channel_members')
+        .select('channel_id')
+        .eq('user_id', currentUserId)
 
-    if (error) {
-      console.error('Error fetching stories:', error)
-      return
-    }
+      let allowedUserIds = [currentUserId]
 
-    if (storiesData && storiesData.length > 0) {
-      // Fetch profiles manually to bypass foreign key relationship issues
-      const userIds = Array.from(new Set(storiesData.map(s => s.user_id)))
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url, display_name')
-        .in('id', userIds)
+      if (myMemberships && myMemberships.length > 0) {
+        const myChannelIds = myMemberships.map(m => m.channel_id)
+        
+        // 2. Fetch all user IDs who share any channel with the current user
+        const { data: sharedMembers } = await supabase
+          .from('channel_members')
+          .select('user_id')
+          .in('channel_id', myChannelIds)
 
-      const joinedStories = storiesData.map(story => ({
-        ...story,
-        profiles: profilesData?.find(p => p.id === story.user_id) || {
-          username: 'Unknown User',
-          avatar_url: null,
-          display_name: 'Unknown User'
+        if (sharedMembers) {
+          allowedUserIds = Array.from(new Set([
+            currentUserId,
+            ...sharedMembers.map(m => m.user_id)
+          ]))
         }
-      })) as Story[]
-
-      // Group by user
-      const uniqueUserIds = Array.from(new Set(joinedStories.map(s => s.user_id)))
-      
-      const groups = uniqueUserIds.map(uid => {
-        // Reverse to show oldest first within a group
-        const userStories = joinedStories.filter(s => s.user_id === uid).reverse()
-        return {
-          user_id: uid,
-          profiles: userStories[0].profiles,
-          stories: userStories
-        }
-      })
-      
-      // Move current user to front if they have a story
-      const myGroupIndex = groups.findIndex(g => g.user_id === currentUserId)
-      if (myGroupIndex > 0) {
-        const myGroup = groups.splice(myGroupIndex, 1)[0]
-        groups.unshift(myGroup)
       }
-      setStoryGroups(groups)
-    } else {
-      setStoryGroups([])
+
+      // 3. Fetch active stories from the allowed users only
+      const { data: storiesData, error } = await supabase
+        .from('stories')
+        .select('*')
+        .in('user_id', allowedUserIds)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      if (storiesData && storiesData.length > 0) {
+        // Fetch profiles manually to bypass foreign key relationship issues
+        const userIds = Array.from(new Set(storiesData.map(s => s.user_id)))
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url, display_name')
+          .in('id', userIds)
+
+        const joinedStories = storiesData.map(story => ({
+          ...story,
+          profiles: profilesData?.find(p => p.id === story.user_id) || {
+            username: 'Unknown User',
+            avatar_url: null,
+            display_name: 'Unknown User'
+          }
+        })) as Story[]
+
+        // Group by user
+        const uniqueUserIds = Array.from(new Set(joinedStories.map(s => s.user_id)))
+        
+        const groups = uniqueUserIds.map(uid => {
+          // Reverse to show oldest first within a group
+          const userStories = joinedStories.filter(s => s.user_id === uid).reverse()
+          return {
+            user_id: uid,
+            profiles: userStories[0].profiles,
+            stories: userStories
+          }
+        })
+        
+        // Move current user to front if they have a story
+        const myGroupIndex = groups.findIndex(g => g.user_id === currentUserId)
+        if (myGroupIndex > 0) {
+          const myGroup = groups.splice(myGroupIndex, 1)[0]
+          groups.unshift(myGroup)
+        }
+        setStoryGroups(groups)
+      } else {
+        setStoryGroups([])
+      }
+    } catch (error) {
+      console.error('Error fetching stories:', error)
     }
   }
 

@@ -7,6 +7,7 @@ import { Smile, Reply, Pencil, Trash2, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import EmojiPicker, { Theme } from 'emoji-picker-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'react-hot-toast'
 
 import { MessageAttachment } from './MessageAttachment'
 import { CallMessage } from './CallMessage'
@@ -46,11 +47,18 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    await supabase.from('messages').update({
+    const { error } = await supabase.from('messages').update({
       content: 'Message deleted',
       deleted_at: new Date().toISOString(),
       type: 'system'
     }).eq('id', message.id)
+
+    if (error) {
+      console.error('Failed to delete message:', error)
+      toast.error('Failed to delete: ' + error.message)
+    } else {
+      toast.success('Message deleted')
+    }
     setShowActions(false)
   }
 
