@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { X, Camera, RotateCw, Check, SwitchCamera } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface CameraModalProps {
   onCapture: (file: File) => void
@@ -104,18 +105,16 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
           className="relative bg-black flex items-center justify-center overflow-hidden w-full max-h-[70vh]"
           style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : '16/9' }}
         >
-          {!hasPhoto ? (
-            <>
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                onLoadedMetadata={handleLoadedMetadata}
-                className="w-full h-full object-cover"
-              />
-              {!isReady && <div className="absolute inset-0 flex items-center justify-center text-white/50">Initializing...</div>}
-            </>
-          ) : (
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            onLoadedMetadata={handleLoadedMetadata}
+            className={cn("w-full h-full object-cover", hasPhoto && "hidden")}
+          />
+          {!isReady && !hasPhoto && <div className="absolute inset-0 flex items-center justify-center text-white/50">Initializing...</div>}
+          
+          {hasPhoto && (
             <img src={photoData!} className="w-full h-full object-cover" alt="Captured" />
           )}
         </div>
