@@ -117,7 +117,7 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
             )}
           >
             {/* Attachments */}
-            {message.attachments && message.attachments.length > 0 && (
+            {!message.deleted_at && message.attachments && message.attachments.length > 0 && (
               <div className="flex flex-col gap-2 mb-1">
                 {message.attachments.map((attachment) => (
                   <MessageAttachment key={attachment.id} attachment={attachment} />
