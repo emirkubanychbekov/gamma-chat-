@@ -395,8 +395,8 @@ function StoryViewer({
         </div>
 
         {/* Profile Info & Optional Delete Button */}
-        <div className="absolute top-8 left-4 right-4 z-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="absolute top-8 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-3 pointer-events-auto">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-slate-800">
               {currentGroup.profiles.avatar_url ? (
                 <img src={currentGroup.profiles.avatar_url} className="w-full h-full object-cover" />
@@ -415,7 +415,7 @@ function StoryViewer({
           {currentStory.user_id === currentUserId && (
             <button 
               onClick={handleDeleteStory}
-              className="p-2 bg-black/40 hover:bg-red-500/20 text-white hover:text-red-500 rounded-full transition-all z-30 pointer-events-auto"
+              className="p-2 bg-black/40 hover:bg-red-500/20 text-white hover:text-red-500 rounded-full transition-all z-30 pointer-events-auto cursor-pointer"
               title="Delete Story"
             >
               <Trash2 className="w-4 h-4" />
