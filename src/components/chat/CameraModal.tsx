@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Camera, RotateCw, Check } from 'lucide-react'
+import { X, Camera, RotateCw, Check, SwitchCamera } from 'lucide-react'
 
 interface CameraModalProps {
   onCapture: (file: File) => void
@@ -14,14 +14,16 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
   const [photoData, setPhotoData] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [aspectRatio, setAspectRatio] = useState<number | null>(null)
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
 
   useEffect(() => {
     let currentStream: MediaStream | null = null
 
     async function startCamera() {
       try {
+        setIsReady(false)
         const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, 
+          video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
           audio: false 
         })
         currentStream = stream
@@ -42,7 +44,7 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
         currentStream.getTracks().forEach(track => track.stop())
       }
     }
-  }, [onClose])
+  }, [facingMode, onClose])
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
@@ -87,6 +89,16 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
         >
           <X className="w-6 h-6" />
         </button>
+
+        {!hasPhoto && (
+          <button 
+            onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+            className="absolute top-4 left-4 z-10 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+            title="Switch Camera"
+          >
+            <SwitchCamera className="w-6 h-6" />
+          </button>
+        )}
  
         <div 
           className="relative bg-black flex items-center justify-center overflow-hidden w-full max-h-[70vh]"
