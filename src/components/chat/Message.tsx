@@ -137,9 +137,11 @@ export function MessageItem({ message, isMe, showDetails, onReply, onEdit }: Mes
 
             {/* Hover Actions */}
             <div className={cn(
-              "absolute top-0 opacity-0 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1 glass p-1 rounded-lg border border-white/10 shadow-xl z-20",
+              "absolute opacity-0 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1 glass p-1 rounded-lg border border-white/10 shadow-xl z-20",
               showActions && "opacity-100 pointer-events-auto",
-              isMe ? "right-full mr-2" : "left-full ml-2"
+              isMe 
+                ? "md:right-full md:mr-2 md:top-0 top-full mt-1 right-0" 
+                : "md:left-full md:ml-2 md:top-0 top-full mt-1 left-0"
             )}>
               <button 
                 onClick={(e) => {
