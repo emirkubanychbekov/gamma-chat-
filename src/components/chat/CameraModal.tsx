@@ -13,6 +13,7 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
   const [hasPhoto, setHasPhoto] = useState(false)
   const [photoData, setPhotoData] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null)
 
   useEffect(() => {
     let currentStream: MediaStream | null = null
@@ -42,6 +43,12 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
       }
     }
   }, [onClose])
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setAspectRatio(videoRef.current.videoWidth / videoRef.current.videoHeight)
+    }
+  }
 
   const takePhoto = () => {
     const video = videoRef.current
@@ -73,21 +80,25 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-slate-900 rounded-3xl overflow-hidden max-w-2xl w-full border border-white/10 shadow-2xl relative">
+      <div className="bg-slate-900 rounded-3xl overflow-hidden max-w-md md:max-w-xl w-full border border-white/10 shadow-2xl relative">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
         >
           <X className="w-6 h-6" />
         </button>
-
-        <div className="relative aspect-video bg-black flex items-center justify-center">
+ 
+        <div 
+          className="relative bg-black flex items-center justify-center overflow-hidden w-full max-h-[70vh]"
+          style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : '16/9' }}
+        >
           {!hasPhoto ? (
             <>
               <video 
                 ref={videoRef} 
                 autoPlay 
                 playsInline 
+                onLoadedMetadata={handleLoadedMetadata}
                 className="w-full h-full object-cover"
               />
               {!isReady && <div className="absolute inset-0 flex items-center justify-center text-white/50">Initializing...</div>}
